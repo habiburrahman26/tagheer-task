@@ -110,9 +110,14 @@ function addLiveMessage(
 
 export default function ChatRoom({ currentChat }: ChatRoomProps) {
   const socketRef = useRef<Socket | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLLIElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -138,6 +143,7 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
               new Date(second.createdAt).getTime(),
           ),
         );
+        setHasMoreMessages(result.hasMore);
         setCurrentUserId(currentUser._id);
       } catch (requestError: unknown) {
         if (isActive) {
@@ -158,6 +164,85 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
       isActive = false;
     };
   }, [currentChat._id]);
+
+  useEffect(() => {
+    if (!shouldAutoScrollRef.current) return;
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  }, [messages]);
+
+  function handleMessagesScroll() {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    shouldAutoScrollRef.current = distanceFromBottom < 80;
+
+    if (container.scrollTop <= 40) {
+      void loadOlderMessages();
+    }
+  }
+
+  async function loadOlderMessages() {
+    if (
+      isLoading ||
+      isLoadingOlder ||
+      !hasMoreMessages ||
+      messages.length === 0
+    ) {
+      return;
+    }
+
+    const oldestMessage = messages[0];
+    const container = messagesContainerRef.current;
+    const previousScrollHeight = container?.scrollHeight ?? 0;
+    const previousScrollTop = container?.scrollTop ?? 0;
+
+    setIsLoadingOlder(true);
+
+    try {
+      const result = await getMessages(
+        currentChat._id,
+        20,
+        oldestMessage._id,
+      );
+      const olderMessages = [...result.messages].sort(
+        (first, second) =>
+          new Date(first.createdAt).getTime() -
+          new Date(second.createdAt).getTime(),
+      );
+
+      setMessages((previousMessages) => {
+        const existingIds = new Set(
+          previousMessages.map((message) => message._id),
+        );
+        return [
+          ...olderMessages.filter((message) => !existingIds.has(message._id)),
+          ...previousMessages,
+        ];
+      });
+      setHasMoreMessages(result.hasMore);
+
+      requestAnimationFrame(() => {
+        if (container) {
+          container.scrollTop =
+            previousScrollTop + container.scrollHeight - previousScrollHeight;
+        }
+      });
+    } catch (requestError: unknown) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to load older messages.',
+      );
+    } finally {
+      setIsLoadingOlder(false);
+    }
+  }
 
   useEffect(() => {
     let isActive = true;
@@ -263,8 +348,17 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
           </div>
         </div>
 
-        <div className="relative h-120 w-full overflow-y-auto border-b border-gray-200 bg-white p-6">
+        <div
+          ref={messagesContainerRef}
+          onScroll={handleMessagesScroll}
+          className="relative h-120 w-full overflow-y-auto border-b border-gray-200 bg-white p-6"
+        >
           <ul className="space-y-2">
+            {isLoadingOlder && (
+              <li className="text-center text-xs text-slate-400">
+                Loading older messages...
+              </li>
+            )}
             {isLoading && <li className="text-sm text-slate-400">Loading messages...</li>}
             {error && <li className="text-sm text-red-600" role="alert">{error}</li>}
             {!isLoading && !error && messages.length === 0 && (
@@ -293,6 +387,7 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
                 </li>
               );
             })}
+            <li ref={messagesEndRef} aria-hidden="true" className="h-px" />
           </ul>
         </div>
 

@@ -261,6 +261,7 @@ export async function getCurrentUser(): Promise<User> {
 export async function getMessages(
   conversationId: string,
   limit = 20,
+  before?: string,
 ): Promise<MessagesResponse> {
   const authToken = (await cookies()).get('authToken')?.value;
 
@@ -268,8 +269,13 @@ export async function getMessages(
     throw new Error('Authentication required.');
   }
 
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (before) {
+    params.set('before', before);
+  }
+
   const response = await fetch(
-    `https://frontend-task-chatapp.onrender.com/api/conversations/${encodeURIComponent(conversationId)}/messages?limit=${limit}`,
+    `https://frontend-task-chatapp.onrender.com/api/conversations/${encodeURIComponent(conversationId)}/messages?${params.toString()}`,
     {
       headers: {
         Accept: 'application/json',
