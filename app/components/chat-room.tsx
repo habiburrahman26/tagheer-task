@@ -1,23 +1,115 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { io, type Socket } from 'socket.io-client';
 import {
+  getAuthToken,
   getCurrentUser,
   getMessages,
   sendMessage,
   type Conversation,
   type Message,
 } from '../login/actions';
-import ChatForm from './chat-form';
 import Avatar from '../utils/avatar';
-
-// import { getMessagesOfChatRoom, sendMessage } from "../../services/ChatService";
+import ChatForm from './chat-form';
 
 type ChatRoomProps = {
   currentChat: Conversation;
 };
 
+function normalizeSocketMessage(payload: unknown): Message | null {
+  if (!payload || typeof payload !== 'object') return null;
+
+  const source = payload as Record<string, unknown>;
+  const message =
+    source.message && typeof source.message === 'object'
+      ? (source.message as Record<string, unknown>)
+      : source.data && typeof source.data === 'object'
+        ? (source.data as Record<string, unknown>)
+        : source;
+  const conversation = message.conversation;
+  const conversationId =
+    typeof conversation === 'string'
+      ? conversation
+      : conversation && typeof conversation === 'object'
+        ? String((conversation as Record<string, unknown>)._id || '')
+        : String(message.conversationId || source.conversationId || '');
+    const conversationValue =
+      conversation && typeof conversation === 'object'
+        ? (conversation as Record<string, unknown>)
+        : null;
+    const resolvedConversationId = conversationValue
+      ? String(conversationValue._id || conversationValue.id || '')
+      : conversationId;
+  const sender = message.sender;
+  const senderId =
+    typeof sender === 'string'
+      ? sender
+      : sender && typeof sender === 'object'
+        ? String(
+            (sender as Record<string, unknown>)._id ||
+              (sender as Record<string, unknown>).id ||
+              '',
+          )
+        : String(message.senderId || source.senderId || '');
+  const text = typeof message.text === 'string' ? message.text : '';
+  const createdAt =
+    typeof message.createdAt === 'string' && message.createdAt
+      ? message.createdAt
+      : new Date().toISOString();
+
+  if (
+    !resolvedConversationId ||
+    !senderId ||
+    !text
+  ) {
+    return null;
+  }
+
+  return {
+    _id:
+      typeof message._id === 'string'
+        ? message._id
+        : `live-${resolvedConversationId}-${senderId}-${createdAt}-${text}`,
+    conversation: resolvedConversationId,
+    sender: senderId,
+    text,
+    createdAt,
+  };
+}
+
+function addLiveMessage(
+  previousMessages: Message[],
+  message: Message,
+): Message[] {
+  const isSameMessage = (item: Message) =>
+    item._id === message._id ||
+    (item.conversation === message.conversation &&
+      item.sender === message.sender &&
+      item.text === message.text &&
+      item.createdAt === message.createdAt);
+
+  if (previousMessages.some(isSameMessage)) {
+    return previousMessages;
+  }
+
+  const temporaryIndex = previousMessages.findIndex(
+    (item) =>
+      item._id.startsWith('temporary-') &&
+      item.conversation === message.conversation &&
+      item.sender === message.sender &&
+      item.text === message.text,
+  );
+
+  if (temporaryIndex === -1) return [...previousMessages, message];
+
+  const nextMessages = [...previousMessages];
+  nextMessages[temporaryIndex] = message;
+  return nextMessages;
+}
+
 export default function ChatRoom({ currentChat }: ChatRoomProps) {
+  const socketRef = useRef<Socket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUserId, setCurrentUserId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +117,8 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let isActive = true;
+
     async function loadMessages() {
       setError('');
       setMessages([]);
@@ -35,35 +129,103 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
           getMessages(currentChat._id),
           getCurrentUser(),
         ]);
+        if (!isActive) return;
+
         setMessages(
           [...result.messages].sort(
-            (firstMessage, secondMessage) =>
-              new Date(firstMessage.createdAt).getTime() -
-              new Date(secondMessage.createdAt).getTime(),
+            (first, second) =>
+              new Date(first.createdAt).getTime() -
+              new Date(second.createdAt).getTime(),
           ),
         );
         setCurrentUserId(currentUser._id);
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : 'Unable to load messages.',
-        );
-        setMessages([]);
+      } catch (requestError: unknown) {
+        if (isActive) {
+          setError(
+            requestError instanceof Error
+              ? requestError.message
+              : 'Unable to load messages.',
+          );
+          setMessages([]);
+        }
       } finally {
-        setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
     }
 
     loadMessages();
+    return () => {
+      isActive = false;
+    };
+  }, [currentChat._id]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    async function connectSocket() {
+      try {
+        const token = await getAuthToken();
+        if (!isActive) return;
+
+        const socket = io('https://frontend-task-chatapp.onrender.com', {
+          auth: { token },
+        });
+        socketRef.current = socket;
+        socket.on('message:new', (payload: unknown) => {
+          const message = normalizeSocketMessage(payload);
+          if (!message || message.conversation !== currentChat._id) return;
+
+          setMessages((previousMessages) =>
+            addLiveMessage(previousMessages, message),
+          );
+        });
+      } catch {
+        // REST history and sending remain available without live updates.
+      }
+    }
+
+    connectSocket();
+    return () => {
+      isActive = false;
+      socketRef.current?.disconnect();
+      socketRef.current = null;
+    };
   }, [currentChat._id]);
 
   async function handleSendMessage(text: string) {
+    const temporaryMessageId = `temporary-${Date.now()}`;
+    const optimisticMessage: Message = {
+      _id: temporaryMessageId,
+      conversation: currentChat._id,
+      sender: currentUserId,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMessages((previousMessages) => [...previousMessages, optimisticMessage]);
     setIsSending(true);
     setError('');
 
     try {
+      const socket = socketRef.current;
+      if (socket?.connected) {
+        socket.emit('message:send', {
+          conversationId: currentChat._id,
+          text,
+        });
+        return;
+      }
+
       const message = await sendMessage(currentChat._id, text);
-      setMessages((previousMessages) => [...previousMessages, message]);
+      setMessages((previousMessages) =>
+        previousMessages.map((item) =>
+          item._id === temporaryMessageId ? message : item,
+        ),
+      );
     } catch (requestError: unknown) {
+      setMessages((previousMessages) =>
+        previousMessages.filter((item) => item._id !== temporaryMessageId),
+      );
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -73,59 +235,6 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
       setIsSending(false);
     }
   }
-
-  //   const [messages, setMessages] = useState([]);
-  //   const [incomingMessage, setIncomingMessage] = useState(null);
-
-  //   const scrollRef = useRef();
-
-  //   useEffect(() => {
-  //     const fetchData = async () => {
-  //     //   const res = await getMessagesOfChatRoom(currentChat._id);
-  //       setMessages(res);
-  //     };
-
-  //     fetchData();
-  //   }, [currentChat._id]);
-
-  //   useEffect(() => {
-  //     scrollRef.current?.scrollIntoView({
-  //       behavior: "smooth",
-  //     });
-  //   }, [messages]);
-
-  //   useEffect(() => {
-  //     socket.current?.on("getMessage", (data) => {
-  //       setIncomingMessage({
-  //         senderId: data.senderId,
-  //         message: data.message,
-  //       });
-  //     });
-  //   }, [socket]);
-
-  //   useEffect(() => {
-  //     incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
-  //   }, [incomingMessage]);
-
-  //   const handleFormSubmit = async (message) => {
-  //     const receiverId = currentChat.members.find(
-  //       (member) => member !== currentUser.uid
-  //     );
-
-  //     socket.current.emit("sendMessage", {
-  //       senderId: currentUser.uid,
-  //       receiverId: receiverId,
-  //       message: message,
-  //     });
-
-  //     const messageBody = {
-  //       chatRoomId: currentChat._id,
-  //       sender: currentUser.uid,
-  //       message: message,
-  //     };
-  //     const res = await sendMessage(messageBody);
-  //     setMessages([...messages, res]);
-  //   };
 
   return (
     <div className="lg:col-span-2 lg:block">
@@ -156,44 +265,30 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
 
         <div className="relative h-120 w-full overflow-y-auto border-b border-gray-200 bg-white p-6">
           <ul className="space-y-2">
-            {isLoading && (
-              <li className="text-sm text-slate-400">Loading messages...</li>
-            )}
-            {error && (
-              <li className="text-sm text-red-600" role="alert">
-                {error}
-              </li>
-            )}
+            {isLoading && <li className="text-sm text-slate-400">Loading messages...</li>}
+            {error && <li className="text-sm text-red-600" role="alert">{error}</li>}
             {!isLoading && !error && messages.length === 0 && (
               <li className="text-sm text-slate-400">No messages yet.</li>
             )}
             {messages.map((message) => {
               const isOwnMessage = message.sender === currentUserId;
+              const messageDate = new Date(message.createdAt);
+              const messageTime = Number.isNaN(messageDate.getTime())
+                ? ''
+                : messageDate.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
 
               return (
-                <li
-                  key={message._id}
-                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
-                      isOwnMessage
-                        ? 'rounded-br-md bg-primary text-white'
-                        : 'rounded-bl-md bg-slate-100 text-slate-800'
-                    }`}
-                  >
+                <li key={message._id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${isOwnMessage ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md bg-slate-100 text-slate-800'}`}>
                     <p className="wrap-break-word text-sm">{message.text}</p>
-                    <time
-                      dateTime={message.createdAt}
-                      className={`mt-1 block text-[11px] ${
-                        isOwnMessage ? 'text-white/70' : 'text-slate-400'
-                      }`}
-                    >
-                      {new Date(message.createdAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </time>
+                    {messageTime && (
+                      <time dateTime={message.createdAt} className={`mt-1 block text-[11px] ${isOwnMessage ? 'text-white/70' : 'text-slate-400'}`}>
+                        {messageTime}
+                      </time>
+                    )}
                   </div>
                 </li>
               );

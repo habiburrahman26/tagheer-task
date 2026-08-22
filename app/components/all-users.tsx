@@ -6,9 +6,10 @@ import Avatar from '../utils/avatar';
 
 type AllUsersProps = {
   onSelectConversation: (conversation: Conversation) => void;
+  refreshKey?: number;
 };
 
-function AllUsers({ onSelectConversation }: AllUsersProps) {
+function AllUsers({ onSelectConversation, refreshKey = 0 }: AllUsersProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,7 +31,7 @@ function AllUsers({ onSelectConversation }: AllUsersProps) {
     }
 
     loadConversations();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <section className="overflow-hidden">

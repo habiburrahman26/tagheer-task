@@ -16,6 +16,16 @@ export type User = {
   createdAt: string;
 };
 
+export async function getAuthToken(): Promise<string> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  return authToken;
+}
+
 export async function login(
   _previousState: LoginState,
   formData: FormData,
