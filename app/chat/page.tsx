@@ -5,7 +5,7 @@ import ChatRoom from '../components/chat-room';
 import SearchUsers from '../components/search-user';
 import Welcome from '../components/welcome';
 import Header from '../components/header';
-import AllUsers from '../components/a;;-users';
+import AllUsers from '../components/all-users';
 
 function Page() {
   const [currentChat, setCurrentChat] = useState(null);

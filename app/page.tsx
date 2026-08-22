@@ -13,7 +13,7 @@ export default function Home() {
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 sm:px-10 lg:px-16">
         <header className="flex items-center justify-between py-7">
           <Link href="/" className="flex items-center gap-3" aria-label="Chat App home">
-            <span className="grid size-10 place-items-center rounded-xl bg-[#e8503a] text-white shadow-[0_8px_20px_rgba(232,80,58,0.22)]">
+            <span className="grid size-10 place-items-center rounded-xl bg-primary text-white shadow-[0_8px_20px_rgba(232,80,58,0.22)]">
               <ChatBubbleLeftRightIcon className="size-5" />
             </span>
             <span className="font-semibold tracking-[-0.02em]">Chat App</span>
@@ -34,8 +34,8 @@ export default function Home() {
 
         <section className="grid flex-1 items-center gap-14 pb-16 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:pb-24 lg:pt-16">
           <div className="max-w-2xl">
-            <p className="landing-eyebrow mb-6 flex items-center gap-2 text-xs font-bold uppercase text-[#e8503a]">
-              <span className="size-2 rounded-full bg-[#e8503a]" />
+            <p className="landing-eyebrow mb-6 flex items-center gap-2 text-xs font-bold uppercase text-primary">
+              <span className="size-2 rounded-full bg-primary" />
               Conversations, made human
             </p>
             <h1 className="max-w-xl text-5xl font-semibold leading-[0.98] tracking-[-0.055em] text-slate-950 sm:text-6xl lg:text-7xl">
@@ -49,7 +49,7 @@ export default function Home() {
             <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/chat"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-[#e8503a]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-primary"
               >
                 Open your chats
                 <ArrowUpRightIcon className="size-4" />
@@ -73,7 +73,7 @@ export default function Home() {
 
           <div className="relative mx-auto w-full max-w-[31rem] lg:justify-self-end">
             <div className="landing-sun absolute -right-10 -top-10 size-36 rounded-full sm:-right-16 sm:-top-16 sm:size-52" />
-            <div className="landing-note absolute -left-5 top-12 z-10 hidden w-40 -rotate-6 rounded-2xl bg-[#e8503a] p-4 text-white shadow-[0_16px_30px_rgba(232,80,58,0.2)] sm:block">
+            <div className="landing-note absolute -left-5 top-12 z-10 hidden w-40 -rotate-6 rounded-2xl bg-primary p-4 text-white shadow-[0_16px_30px_rgba(232,80,58,0.2)] sm:block">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Today</p>
               <p className="mt-3 text-sm font-medium leading-5">The group chat is where the magic happens.</p>
             </div>
@@ -84,7 +84,7 @@ export default function Home() {
                     <p className="text-xs font-medium text-slate-400">Your inbox</p>
                     <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em]">Good energy only</h2>
                   </div>
-                  <span className="grid size-9 place-items-center rounded-full bg-[#f9e5df] text-[#e8503a]">
+                  <span className="grid size-9 place-items-center rounded-full bg-[#f9e5df] text-primary">
                     <ChatBubbleLeftRightIcon className="size-5" />
                   </span>
                 </div>
@@ -95,7 +95,7 @@ export default function Home() {
                       <div className="flex justify-between gap-2 text-sm font-semibold"><span>Jamie Smith</span><span className="text-[11px] font-medium text-slate-400">9:42</span></div>
                       <p className="mt-1 truncate text-xs text-slate-500">That sounds perfect. See you soon?</p>
                     </div>
-                    <span className="mt-1 size-2 rounded-full bg-[#e8503a]" />
+                    <span className="mt-1 size-2 rounded-full bg-primary" />
                   </div>
                   <div className="flex items-start gap-3 p-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f2d18b] text-xs font-bold text-[#654d18]">RK</span>
@@ -122,15 +122,15 @@ export default function Home() {
 
         <section id="why-chat" className="grid gap-6 border-t border-slate-900/10 py-8 sm:grid-cols-3 sm:gap-8 lg:py-10">
           <div className="flex gap-3">
-            <BoltIcon className="size-5 shrink-0 text-[#e8503a]" />
+            <BoltIcon className="size-5 shrink-0 text-primary" />
             <div><h3 className="text-sm font-semibold">Feels instant</h3><p className="mt-1 text-sm leading-5 text-slate-500">Your conversations stay close at hand.</p></div>
           </div>
           <div className="flex gap-3">
-            <UsersIcon className="size-5 shrink-0 text-[#e8503a]" />
+            <UsersIcon className="size-5 shrink-0 text-primary" />
             <div><h3 className="text-sm font-semibold">Find your people</h3><p className="mt-1 text-sm leading-5 text-slate-500">Search, connect, and pick up naturally.</p></div>
           </div>
           <div className="flex gap-3">
-            <ShieldCheckIcon className="size-5 shrink-0 text-[#e8503a]" />
+            <ShieldCheckIcon className="size-5 shrink-0 text-primary" />
             <div><h3 className="text-sm font-semibold">Easy by design</h3><p className="mt-1 text-sm leading-5 text-slate-500">A focused space without the noise.</p></div>
           </div>
         </section>

@@ -1,26 +1,49 @@
-import { ArrowLeftStartOnRectangleIcon } from '@heroicons/react/16/solid';
+import {
+  ArrowLeftStartOnRectangleIcon,
+  ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
 export default function Header() {
   return (
-    <>
-      <nav className="px- px-2 sm:px-4 py-2.5 bg-gray-50 border-gray-200  text-sm rounded border">
-        <div className="container mx-auto flex flex-wrap items-center justify-between">
-          <Link href="/" className="flex">
-            <span className="self-center text-lg font-semibold whitespace-nowrap text-gray-900">
+    <header className="border-b border-slate-200/80 bg-[#fffdf9]">
+      <nav
+        className="flex min-h-18 items-center justify-between gap-4 px-4 py-3 sm:px-6"
+        aria-label="Main navigation"
+      >
+        <Link
+          href="/"
+          className="flex min-w-0 items-center gap-3"
+          aria-label="Chat App home"
+        >
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-white shadow-[0_8px_20px_rgba(232,80,58,0.18)]">
+            <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-semibold tracking-[-0.02em] text-slate-950 sm:text-base">
               Chat App
             </span>
-          </Link>
-          <div>
-            <button className="text-gray-500 hover:bg-gray-600 focus:outline-none rounded-md text-sm p-2.5 cursor-pointer transition-all">
-              <ArrowLeftStartOnRectangleIcon
-                className="h-8 w-8 rotate-180"
-                aria-hidden="true"
-              />
-            </button>
-          </div>
+            <span className="hidden text-[11px] font-medium text-slate-400 sm:block">
+              Your conversations
+            </span>
+          </span>
+        </Link>
+
+        <div className="flex items-center gap-3 sm:gap-5">
+          <button
+            type="button"
+            aria-label="Log out"
+            title="Log out"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-primary/40 hover:bg-[#f9e5df] hover:text-[#c63d2c] focus:outline-none focus:ring-4 focus:ring-primary/10"
+          >
+            <ArrowLeftStartOnRectangleIcon
+              className="size-4 rotate-180"
+              aria-hidden="true"
+            />
+            <span className="hidden sm:inline">Log out</span>
+          </button>
         </div>
       </nav>
-    </>
+    </header>
   );
 }

@@ -16,10 +16,10 @@ export default function Login() {
       <div className="mx-auto grid min-h-[calc(100vh-2.5rem)] max-w-6xl overflow-hidden rounded-4xl border border-white/80 bg-white/70 shadow-[0_24px_70px_rgba(57,48,38,0.12)] backdrop-blur-sm sm:min-h-[calc(100vh-4rem)] lg:grid-cols-[0.9fr_1.1fr]">
         <section className="relative flex min-h-76 flex-col justify-between overflow-hidden bg-slate-950 p-7 text-white sm:p-10 lg:p-12">
           <div className="absolute -right-16 -top-16 size-48 rounded-full bg-[#f2d18b]" />
-          <div className="absolute -bottom-20 -left-12 size-52 rounded-full border-[2.5rem] border-[#e8503a]/80" />
+          <div className="absolute -bottom-20 -left-12 size-52 rounded-full border-[2.5rem] border-primary/80" />
           <div className="relative">
             <Link href="/" className="inline-flex items-center gap-3 text-sm font-semibold" aria-label="Back to Chat App home">
-              <span className="grid size-10 place-items-center rounded-xl bg-[#e8503a] text-white">
+              <span className="grid size-10 place-items-center rounded-xl bg-primary text-white">
                 <ChatBubbleLeftRightIcon className="size-5" />
               </span>
               Chat App
@@ -57,7 +57,7 @@ export default function Login() {
                   autoComplete="name"
                   required
                   placeholder="Your name"
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#e8503a] focus:ring-4 focus:ring-[#e8503a]/10"
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10"
                 />
               </div>
               <div>
@@ -69,13 +69,13 @@ export default function Login() {
                   autoComplete="tel"
                   required
                   placeholder="e.g. +1 555 123 4567"
-                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-[#e8503a] focus:ring-4 focus:ring-[#e8503a]/10"
+                  className="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-4 focus:ring-primary/10"
                 />
               </div>
               <button
                 type="submit"
                 disabled={isPending}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#e8503a] px-4 py-3.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(232,80,58,0.2)] transition hover:-translate-y-0.5 hover:bg-[#d9432f] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(232,80,58,0.2)] transition hover:-translate-y-0.5 hover:bg-[#d9432f] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <LockClosedIcon className="size-4" />
                 {isPending ? 'Joining...' : 'Continue to Chat App'}

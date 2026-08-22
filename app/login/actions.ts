@@ -59,3 +59,65 @@ export async function login(
 
   redirect('/chat');
 }
+
+
+export type ConversationParticipant = {
+  _id: string;
+  name: string;
+  phone: string;
+};
+
+export type LastMessage = {
+  text?: string;
+  sender?: string;
+  createdAt?: string;
+};
+
+type ConversationBase = {
+  _id: string;
+  type: 'direct' | 'group';
+  lastMessage: LastMessage;
+  updatedAt: string;
+  createdBy?: string;
+  admins?: string[];
+};
+
+export type GroupConversation = ConversationBase & {
+  type: 'group';
+  name: string;
+  participants: ConversationParticipant[];
+};
+
+export type DirectConversation = ConversationBase & {
+  type: 'direct';
+  participant: ConversationParticipant;
+};
+
+export type Conversation = GroupConversation | DirectConversation;
+
+export async function getConversions(): Promise<Conversation[]> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    'https://frontend-task-chatapp.onrender.com/api/conversations',
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      cache: 'no-store',
+    },
+  );
+  const result: { data?: Conversation[]; error?: { message?: string } } =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error?.message || 'Unable to load conversations.');
+  }
+
+  return result.data ?? [];
+}
