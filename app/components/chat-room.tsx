@@ -322,7 +322,7 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
   }
 
   return (
-    <div className="lg:col-span-2 lg:block">
+    <div className="min-w-0 lg:block">
       <div className="w-full">
         <div className="flex items-center gap-3 border-b border-gray-200 bg-white p-4">
           <span className="grid size-10 place-items-center rounded-full bg-[#f9e5df] text-primary">
@@ -351,7 +351,7 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
         <div
           ref={messagesContainerRef}
           onScroll={handleMessagesScroll}
-          className="relative h-120 w-full overflow-y-auto border-b border-gray-200 bg-white p-6"
+          className="relative h-[min(32rem,65vh)] w-full min-w-0 overflow-y-auto border-b border-gray-200 bg-white p-4 sm:p-6"
         >
           <ul className="space-y-2">
             {isLoadingOlder && (

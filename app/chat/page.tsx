@@ -54,26 +54,24 @@ function Page() {
   }
 
   return (
-    <div className="container mx-auto">
-      <>
+    <main className="min-h-screen overflow-x-hidden px-3 py-3 sm:px-6 sm:py-6">
+      <div className="mx-auto w-full max-w-7xl overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <Header />
-        <div className="min-w-full bg-white border-x border-b border-gray-200 rounded lg:grid lg:grid-cols-3">
-          <div className="bg-white border-r border-gray-200 lg:col-span-1">
+        <div className="grid w-full min-w-0 lg:grid-cols-3">
+          <aside className="min-w-0 border-b border-gray-200 bg-white lg:col-span-1 lg:border-b-0 lg:border-r">
             <SearchUsers onSelectUser={handleSelectUser} />
             <AllUsers
               onSelectConversation={setCurrentChat}
               refreshKey={conversationRefreshKey}
             />
-          </div>
+          </aside>
 
-          {currentChat ? (
-            <ChatRoom currentChat={currentChat} />
-          ) : (
-            <Welcome />
-          )}
+          <div className="min-w-0 lg:col-span-2">
+            {currentChat ? <ChatRoom currentChat={currentChat} /> : <Welcome />}
+          </div>
         </div>
-      </>
-    </div>
+      </div>
+    </main>
   );
 }
 

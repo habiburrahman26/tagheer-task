@@ -43,7 +43,7 @@ function AllUsers({ onSelectConversation, refreshKey = 0 }: AllUsersProps) {
           </span>
         )}
       </div>
-      <ul className="h-120 overflow-auto">
+      <ul className="h-80 overflow-auto lg:h-120">
         {isLoading && (
           <li className="px-4 py-6 text-sm text-slate-400">
             Loading conversations...
