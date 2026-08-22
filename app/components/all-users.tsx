@@ -1,11 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-import {
-  getConversions,
-  type Conversation,
-} from '../login/actions';
+import { getConversions, type Conversation } from '../login/actions';
+import Avatar from '../utils/avatar';
 
 type AllUsersProps = {
   onSelectConversation: (conversation: Conversation) => void;
@@ -20,15 +17,15 @@ function AllUsers({ onSelectConversation }: AllUsersProps) {
     async function loadConversations() {
       try {
         const data = await getConversions();
-          setConversations(data);
+        setConversations(data);
       } catch (requestError: unknown) {
-          setError(
-            requestError instanceof Error
-              ? requestError.message
-              : 'Unable to load conversations.',
-          );
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : 'Unable to load conversations.',
+        );
       } finally {
-          setIsLoading(false);
+        setIsLoading(false);
       }
     }
 
@@ -69,10 +66,17 @@ function AllUsers({ onSelectConversation }: AllUsersProps) {
               className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-[#f9e5df]/60"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f9e5df] text-primary">
-                {/* <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" /> */}
+                <Avatar
+                  seed={
+                    conversation.type === 'group'
+                      ? conversation.name
+                      : conversation.participant.name
+                  }
+                />
+                {/* <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
                 {conversation.type === 'group'
-                    ? conversation.name.charAt(0).toUpperCase()
-                    : conversation.participant.name.charAt(0).toUpperCase()}
+                  ? conversation.name.charAt(0).toUpperCase()
+                  : conversation.participant.name.charAt(0).toUpperCase()} */}
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-slate-800">
@@ -92,4 +96,4 @@ function AllUsers({ onSelectConversation }: AllUsersProps) {
   );
 }
 
-export default AllUsers
+export default AllUsers;

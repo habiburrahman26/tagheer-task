@@ -1,9 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-import { getMessages, type Conversation, type Message } from '../login/actions';
+import {
+  getCurrentUser,
+  getMessages,
+  sendMessage,
+  type Conversation,
+  type Message,
+} from '../login/actions';
 import ChatForm from './chat-form';
+import Avatar from '../utils/avatar';
 
 // import { getMessagesOfChatRoom, sendMessage } from "../../services/ChatService";
 
@@ -13,23 +19,33 @@ type ChatRoomProps = {
 
 export default function ChatRoom({ currentChat }: ChatRoomProps) {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentUserId, setCurrentUserId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     async function loadMessages() {
       setError('');
       setMessages([]);
-      setIsLoading(true)
+      setIsLoading(true);
 
       try {
-        const result = await getMessages(currentChat._id);
-        setMessages(result.messages);
+        const [result, currentUser] = await Promise.all([
+          getMessages(currentChat._id),
+          getCurrentUser(),
+        ]);
+        setMessages(
+          [...result.messages].sort(
+            (firstMessage, secondMessage) =>
+              new Date(firstMessage.createdAt).getTime() -
+              new Date(secondMessage.createdAt).getTime(),
+          ),
+        );
+        setCurrentUserId(currentUser._id);
       } catch (error) {
         setError(
-          error instanceof Error
-            ? error.message
-            : 'Unable to load messages.',
+          error instanceof Error ? error.message : 'Unable to load messages.',
         );
         setMessages([]);
       } finally {
@@ -39,6 +55,24 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
 
     loadMessages();
   }, [currentChat._id]);
+
+  async function handleSendMessage(text: string) {
+    setIsSending(true);
+    setError('');
+
+    try {
+      const message = await sendMessage(currentChat._id, text);
+      setMessages((previousMessages) => [...previousMessages, message]);
+    } catch (requestError: unknown) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : 'Unable to send message.',
+      );
+    } finally {
+      setIsSending(false);
+    }
+  }
 
   //   const [messages, setMessages] = useState([]);
   //   const [incomingMessage, setIncomingMessage] = useState(null);
@@ -98,9 +132,13 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
       <div className="w-full">
         <div className="flex items-center gap-3 border-b border-gray-200 bg-white p-4">
           <span className="grid size-10 place-items-center rounded-full bg-[#f9e5df] text-primary">
-             {currentChat.type === 'group'
-                ? currentChat.name.charAt(0).toUpperCase()
-                : currentChat.participant.name.charAt(0).toUpperCase()}
+            <Avatar
+              seed={
+                currentChat.type === 'group'
+                  ? currentChat.name
+                  : currentChat.participant.name
+              }
+            />
           </span>
           <div className="min-w-0">
             <h2 className="truncate text-sm font-semibold text-slate-900">
@@ -129,21 +167,41 @@ export default function ChatRoom({ currentChat }: ChatRoomProps) {
             {!isLoading && !error && messages.length === 0 && (
               <li className="text-sm text-slate-400">No messages yet.</li>
             )}
-            {messages.map((message) => (
-              <li key={message._id} className="rounded-xl bg-slate-50 p-3">
-                <p className="text-xs font-semibold text-slate-500">
-                  {message.sender}
-                </p>
-                <p className="mt-1 text-sm text-slate-800">{message.text}</p>
-                <time className="mt-1 block text-[11px] text-slate-400">
-                  {new Date(message.createdAt).toLocaleString()}
-                </time>
-              </li>
-            ))}
+            {messages.map((message) => {
+              const isOwnMessage = message.sender === currentUserId;
+
+              return (
+                <li
+                  key={message._id}
+                  className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-sm ${
+                      isOwnMessage
+                        ? 'rounded-br-md bg-primary text-white'
+                        : 'rounded-bl-md bg-slate-100 text-slate-800'
+                    }`}
+                  >
+                    <p className="wrap-break-word text-sm">{message.text}</p>
+                    <time
+                      dateTime={message.createdAt}
+                      className={`mt-1 block text-[11px] ${
+                        isOwnMessage ? 'text-white/70' : 'text-slate-400'
+                      }`}
+                    >
+                      {new Date(message.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
-        <ChatForm />
+        <ChatForm onSubmitMessage={handleSendMessage} isSending={isSending} />
       </div>
     </div>
   );

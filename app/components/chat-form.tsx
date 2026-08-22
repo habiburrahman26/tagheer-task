@@ -1,61 +1,43 @@
-'use client'
+'use client';
 
-import { PaperAirplaneIcon } from "@heroicons/react/24/outline";
+import { useState } from 'react';
+import { PaperAirplaneIcon } from '@heroicons/react/24/outline';
 
+type ChatFormProps = {
+  onSubmitMessage: (text: string) => Promise<void>;
+  isSending: boolean;
+};
 
-export default function ChatForm() {
-  // const [message, setMessage] = useState("");
-  // const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+export default function ChatForm({ onSubmitMessage, isSending }: ChatFormProps) {
+  const [text, setText] = useState('');
 
-  // const scrollRef = useRef();
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const message = text.trim();
 
-  // useEffect(() => {
-  //   scrollRef.current?.scrollIntoView();
-  // }, [showEmojiPicker]);
+    if (!message || isSending) {
+      return;
+    }
 
-  // const handleEmojiClick = (event, emojiObject) => {
-  //   let newMessage = message + emojiObject.emoji;
-  //   setMessage(newMessage);
-  // };
-
-  // const handleFormSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   props.handleFormSubmit(message);
-  //   setMessage("");
-  // };
+    await onSubmitMessage(message);
+    setText('');
+  }
 
   return (
-    <div >
-      {/* {showEmojiPicker && (
-        <Picker className="dark:bg-gray-900" onEmojiClick={handleEmojiClick} />
-      )} */}
-      <form >
-        <div className="flex items-center justify-between w-full p-3 bg-white border-b border-gray-200">
-          {/* <button
-            onClick={(e) => {
-              e.preventDefault();
-              // setShowEmojiPicker(!showEmojiPicker);
-            }}
-          >
-            <EmojiHappyIcon
-              className="h-7 w-7 text-blue-600 dark:text-blue-500"
-              aria-hidden="true"
-            />
-          </button> */}
-
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div className="flex w-full items-center justify-between border-b border-gray-200 bg-white p-3">
           <input
             type="text"
             placeholder="Write a message"
-            className="block w-full py-2 pl-4 mx-3 outline-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 "
-            name="message"
-            required
-            // value={message}
-            // onChange={(e) => setMessage(e.target.value)}
+            className="mx-3 block w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-4 text-sm text-gray-900 outline-none focus:border-primary focus:ring-primary"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            disabled={isSending}
           />
-          <button type="submit">
+          <button type="submit" disabled={isSending || !text.trim()} aria-label="Send message">
             <PaperAirplaneIcon
-              className="h-6 w-6 text-blue-600"
+              className="size-6 text-primary"
               aria-hidden="true"
             />
           </button>

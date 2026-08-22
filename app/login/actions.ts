@@ -9,6 +9,13 @@ export type LoginState = {
   error?: string;
 };
 
+export type User = {
+  _id: string;
+  name: string;
+  phone: string;
+  createdAt: string;
+};
+
 export async function login(
   _previousState: LoginState,
   formData: FormData,
@@ -66,6 +73,8 @@ export type ConversationParticipant = {
   name: string;
   phone: string;
 };
+
+export type SearchUser = Omit<ConversationParticipant, 'createdAt'>;
 
 export type LastMessage = {
   text?: string;
@@ -135,6 +144,110 @@ export async function getConversions(): Promise<Conversation[]> {
   return result.data ?? [];
 }
 
+export async function searchUsers(query: string): Promise<SearchUser[]> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    `https://frontend-task-chatapp.onrender.com/api/users/search?q=${encodeURIComponent(query)}`,
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      cache: 'no-store',
+    },
+  );
+  const result: SearchUser[] | { error?: { message?: string } } =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      'error' in result && result.error?.message
+        ? result.error.message
+        : 'Unable to search users.',
+    );
+  }
+
+  return Array.isArray(result) ? result : [];
+}
+
+export async function createConversation(userId: string): Promise<Conversation> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    'https://frontend-task-chatapp.onrender.com/api/conversations',
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId }),
+      cache: 'no-store',
+    },
+  );
+  const result: { _id?: string; error?: { message?: string } } =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      'error' in result && result.error?.message
+        ? result.error.message
+        : 'Unable to start conversation.',
+    );
+  }
+
+  const conversations = await getConversions();
+  const conversation = conversations.find(
+    (item) => item._id === result._id,
+  );
+
+  if (!conversation) {
+    throw new Error('Conversation created, but could not be loaded.');
+  }
+
+  return conversation;
+}
+
+export async function getCurrentUser(): Promise<User> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    'https://frontend-task-chatapp.onrender.com/api/auth/me',
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      cache: 'no-store',
+    },
+  );
+  const result: User | { error?: { message?: string } } = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      'error' in result && result.error?.message
+        ? result.error.message
+        : 'Unable to load your account.',
+    );
+  }
+
+  return result as User;
+}
+
 export async function getMessages(
   conversationId: string,
   limit = 20,
@@ -167,4 +280,41 @@ export async function getMessages(
   }
 
   return result as MessagesResponse;
+}
+
+export async function sendMessage(
+  conversationId: string,
+  text: string,
+): Promise<Message> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    'https://frontend-task-chatapp.onrender.com/api/messages',
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ conversationId, text }),
+      cache: 'no-store',
+    },
+  );
+  const result: Message | { error?: { message?: string } } =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      'error' in result && result.error?.message
+        ? result.error.message
+        : 'Unable to send message.',
+    );
+  }
+
+  return result as Message;
 }
