@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { searchUsers, type SearchUser } from '../login/actions';
+import { searchUsers} from '../server-actions/actions';
+import { SearchUser } from '../types/types';
 
 type SearchUsersProps = {
   onSelectUser: (user: SearchUser) => Promise<void>;
@@ -47,11 +48,11 @@ function SearchUsers({ onSelectUser }: SearchUsersProps) {
         if (isActive) {
           setUsers(results);
         }
-      } catch (requestError: unknown) {
+      } catch (error: unknown) {
         if (isActive) {
           setError(
-            requestError instanceof Error
-              ? requestError.message
+            error instanceof Error
+              ? error.message
               : 'Unable to search users.',
           );
         }

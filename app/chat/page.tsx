@@ -10,9 +10,8 @@ import AllUsers from '../components/all-users';
 import {
   createConversation,
   getAuthToken,
-  type Conversation,
-  type SearchUser,
-} from '../login/actions';
+} from '../server-actions/actions';
+import { Conversation, SearchUser } from '../types/types';
 
 function Page() {
   const [currentChat, setCurrentChat] = useState<Conversation | null>(null);
@@ -33,11 +32,11 @@ function Page() {
         socket.on('conversation:updated', () => {
           setConversationRefreshKey((key) => key + 1);
         });
-        socket.on('message:new', (payload: unknown) => {
+        socket.on('message:new', () => {
           setConversationRefreshKey((key) => key + 1);
         });
-      } catch {
-        // REST loading continues if the live connection is unavailable.
+      } catch(error) {
+        console.log(error)
       }
     }
 
@@ -48,6 +47,7 @@ function Page() {
       socket?.disconnect();
     };
   }, []);
+  
   async function handleSelectUser(user: SearchUser) {
     const conversation = await createConversation(user._id);
     setCurrentChat(conversation);

@@ -3,7 +3,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { logout } from '../login/actions';
+import { logout } from '../server-actions/actions';
 
 export default function Header() {
   return (

@@ -3,7 +3,8 @@
 import { useActionState } from 'react';
 import { ArrowLeftIcon, ChatBubbleLeftRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { login, type LoginState } from './actions';
+import { login } from '../server-actions/actions';
+import { LoginState } from '../types/types';
 
 export default function Login() {
   const [state, formAction, isPending] = useActionState<LoginState, FormData>(

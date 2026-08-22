@@ -2,19 +2,9 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { Conversation, LoginState, Message, MessagesResponse, SearchUser, User } from '../types/types';
 
 const BASE_URL = process.env.BASE_URL;
-
-export type LoginState = {
-  error?: string;
-};
-
-export type User = {
-  _id: string;
-  name: string;
-  phone: string;
-  createdAt: string;
-};
 
 export async function getAuthToken(): Promise<string> {
   const authToken = (await cookies()).get('authToken')?.value;
@@ -82,56 +72,6 @@ export async function logout(): Promise<never> {
   cookieStore.delete('authToken');
   redirect('/');
 }
-
-
-export type ConversationParticipant = {
-  _id: string;
-  name: string;
-  phone: string;
-};
-
-export type SearchUser = Omit<ConversationParticipant, 'createdAt'>;
-
-export type LastMessage = {
-  text?: string;
-  sender?: string;
-  createdAt?: string;
-};
-
-type ConversationBase = {
-  _id: string;
-  type: 'direct' | 'group';
-  lastMessage: LastMessage;
-  updatedAt: string;
-  createdBy?: string;
-  admins?: string[];
-};
-
-export type GroupConversation = ConversationBase & {
-  type: 'group';
-  name: string;
-  participants: ConversationParticipant[];
-};
-
-export type DirectConversation = ConversationBase & {
-  type: 'direct';
-  participant: ConversationParticipant;
-};
-
-export type Conversation = GroupConversation | DirectConversation;
-
-export type Message = {
-  _id: string;
-  conversation: string;
-  sender: string;
-  text: string;
-  createdAt: string;
-};
-
-export type MessagesResponse = {
-  messages: Message[];
-  hasMore: boolean;
-};
 
 export async function getConversions(): Promise<Conversation[]> {
   const authToken = (await cookies()).get('authToken')?.value;

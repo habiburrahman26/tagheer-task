@@ -74,14 +74,14 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[31rem] lg:justify-self-end">
+          <div className="relative mx-auto w-full max-w-124 lg:justify-self-end">
             <div className="landing-sun absolute -right-10 -top-10 size-36 rounded-full sm:-right-16 sm:-top-16 sm:size-52" />
             <div className="landing-note absolute -left-5 top-12 z-10 hidden w-40 -rotate-6 rounded-2xl bg-primary p-4 text-white shadow-[0_16px_30px_rgba(232,80,58,0.2)] sm:block">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-white/70">Today</p>
               <p className="mt-3 text-sm font-medium leading-5">The group chat is where the magic happens.</p>
             </div>
-            <div className="relative rounded-[2rem] border border-white/80 bg-white/80 p-3 shadow-[0_24px_70px_rgba(57,48,38,0.14)] backdrop-blur-sm sm:p-4">
-              <div className="rounded-[1.5rem] bg-[#fffdf9] p-5 sm:p-6">
+            <div className="relative rounded-4xl border border-white/80 bg-white/80 p-3 shadow-[0_24px_70px_rgba(57,48,38,0.14)] backdrop-blur-sm sm:p-4">
+              <div className="rounded-3xl bg-[#fffdf9] p-5 sm:p-6">
                 <div className="flex items-center justify-between border-b border-slate-200/80 pb-5">
                   <div>
                     <p className="text-xs font-medium text-slate-400">Your inbox</p>

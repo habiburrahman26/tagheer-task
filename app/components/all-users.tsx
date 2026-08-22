@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getConversions, type Conversation } from '../login/actions';
+import { getConversions } from '../server-actions/actions';
 import Avatar from '../utils/avatar';
+import { Conversation } from '../types/types';
 
 type AllUsersProps = {
   onSelectConversation: (conversation: Conversation) => void;
@@ -74,10 +75,6 @@ function AllUsers({ onSelectConversation, refreshKey = 0 }: AllUsersProps) {
                       : conversation.participant.name
                   }
                 />
-                {/* <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
-                {conversation.type === 'group'
-                  ? conversation.name.charAt(0).toUpperCase()
-                  : conversation.participant.name.charAt(0).toUpperCase()} */}
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-slate-800">
