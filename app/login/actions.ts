@@ -95,6 +95,19 @@ export type DirectConversation = ConversationBase & {
 
 export type Conversation = GroupConversation | DirectConversation;
 
+export type Message = {
+  _id: string;
+  conversation: string;
+  sender: string;
+  text: string;
+  createdAt: string;
+};
+
+export type MessagesResponse = {
+  messages: Message[];
+  hasMore: boolean;
+};
+
 export async function getConversions(): Promise<Conversation[]> {
   const authToken = (await cookies()).get('authToken')?.value;
 
@@ -120,4 +133,38 @@ export async function getConversions(): Promise<Conversation[]> {
   }
 
   return result.data ?? [];
+}
+
+export async function getMessages(
+  conversationId: string,
+  limit = 20,
+): Promise<MessagesResponse> {
+  const authToken = (await cookies()).get('authToken')?.value;
+
+  if (!authToken) {
+    throw new Error('Authentication required.');
+  }
+
+  const response = await fetch(
+    `https://frontend-task-chatapp.onrender.com/api/conversations/${encodeURIComponent(conversationId)}/messages?limit=${limit}`,
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${authToken}`,
+      },
+      cache: 'no-store',
+    },
+  );
+  const result: MessagesResponse | { error?: { message?: string } } =
+    await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      'error' in result && result.error?.message
+        ? result.error.message
+        : 'Unable to load messages.',
+    );
+  }
+
+  return result as MessagesResponse;
 }

@@ -1,81 +1,149 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from 'react';
+import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { getMessages, type Conversation, type Message } from '../login/actions';
+import ChatForm from './chat-form';
 
 // import { getMessagesOfChatRoom, sendMessage } from "../../services/ChatService";
 
-export default function ChatRoom() {
-//   const [messages, setMessages] = useState([]);
-//   const [incomingMessage, setIncomingMessage] = useState(null);
+type ChatRoomProps = {
+  currentChat: Conversation;
+};
 
-//   const scrollRef = useRef();
+export default function ChatRoom({ currentChat }: ChatRoomProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-//   useEffect(() => {
-//     const fetchData = async () => {
-//     //   const res = await getMessagesOfChatRoom(currentChat._id);
-//       setMessages(res);
-//     };
+  useEffect(() => {
+    async function loadMessages() {
+      setError('');
+      setMessages([]);
+      setIsLoading(true)
 
-//     fetchData();
-//   }, [currentChat._id]);
+      try {
+        const result = await getMessages(currentChat._id);
+        setMessages(result.messages);
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to load messages.',
+        );
+        setMessages([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-//   useEffect(() => {
-//     scrollRef.current?.scrollIntoView({
-//       behavior: "smooth",
-//     });
-//   }, [messages]);
+    loadMessages();
+  }, [currentChat._id]);
 
-//   useEffect(() => {
-//     socket.current?.on("getMessage", (data) => {
-//       setIncomingMessage({
-//         senderId: data.senderId,
-//         message: data.message,
-//       });
-//     });
-//   }, [socket]);
+  //   const [messages, setMessages] = useState([]);
+  //   const [incomingMessage, setIncomingMessage] = useState(null);
 
-//   useEffect(() => {
-//     incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
-//   }, [incomingMessage]);
+  //   const scrollRef = useRef();
 
-//   const handleFormSubmit = async (message) => {
-//     const receiverId = currentChat.members.find(
-//       (member) => member !== currentUser.uid
-//     );
+  //   useEffect(() => {
+  //     const fetchData = async () => {
+  //     //   const res = await getMessagesOfChatRoom(currentChat._id);
+  //       setMessages(res);
+  //     };
 
-//     socket.current.emit("sendMessage", {
-//       senderId: currentUser.uid,
-//       receiverId: receiverId,
-//       message: message,
-//     });
+  //     fetchData();
+  //   }, [currentChat._id]);
 
-//     const messageBody = {
-//       chatRoomId: currentChat._id,
-//       sender: currentUser.uid,
-//       message: message,
-//     };
-//     const res = await sendMessage(messageBody);
-//     setMessages([...messages, res]);
-//   };
+  //   useEffect(() => {
+  //     scrollRef.current?.scrollIntoView({
+  //       behavior: "smooth",
+  //     });
+  //   }, [messages]);
+
+  //   useEffect(() => {
+  //     socket.current?.on("getMessage", (data) => {
+  //       setIncomingMessage({
+  //         senderId: data.senderId,
+  //         message: data.message,
+  //       });
+  //     });
+  //   }, [socket]);
+
+  //   useEffect(() => {
+  //     incomingMessage && setMessages((prev) => [...prev, incomingMessage]);
+  //   }, [incomingMessage]);
+
+  //   const handleFormSubmit = async (message) => {
+  //     const receiverId = currentChat.members.find(
+  //       (member) => member !== currentUser.uid
+  //     );
+
+  //     socket.current.emit("sendMessage", {
+  //       senderId: currentUser.uid,
+  //       receiverId: receiverId,
+  //       message: message,
+  //     });
+
+  //     const messageBody = {
+  //       chatRoomId: currentChat._id,
+  //       sender: currentUser.uid,
+  //       message: message,
+  //     };
+  //     const res = await sendMessage(messageBody);
+  //     setMessages([...messages, res]);
+  //   };
 
   return (
     <div className="lg:col-span-2 lg:block">
       <div className="w-full">
-        <div className="p-3 bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-          <Contact />
+        <div className="flex items-center gap-3 border-b border-gray-200 bg-white p-4">
+          <span className="grid size-10 place-items-center rounded-full bg-[#f9e5df] text-primary">
+             {currentChat.type === 'group'
+                ? currentChat.name.charAt(0).toUpperCase()
+                : currentChat.participant.name.charAt(0).toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-semibold text-slate-900">
+              {currentChat.type === 'group'
+                ? currentChat.name
+                : currentChat.participant.name}
+            </h2>
+            <p className="text-xs text-slate-400">
+              {currentChat.type === 'group'
+                ? `${currentChat.participants.length} participants`
+                : currentChat.participant.phone}
+            </p>
+          </div>
         </div>
 
-        <div className="relative w-full p-6 overflow-y-auto h-[30rem] bg-white border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+        <div className="relative h-120 w-full overflow-y-auto border-b border-gray-200 bg-white p-6">
           <ul className="space-y-2">
-            {/* {messages.map((message, index) => (
-              <div key={index} ref={scrollRef}>
-                <Message message={message} self={currentUser.uid} />
-              </div>
-            ))} */}
+            {isLoading && (
+              <li className="text-sm text-slate-400">Loading messages...</li>
+            )}
+            {error && (
+              <li className="text-sm text-red-600" role="alert">
+                {error}
+              </li>
+            )}
+            {!isLoading && !error && messages.length === 0 && (
+              <li className="text-sm text-slate-400">No messages yet.</li>
+            )}
+            {messages.map((message) => (
+              <li key={message._id} className="rounded-xl bg-slate-50 p-3">
+                <p className="text-xs font-semibold text-slate-500">
+                  {message.sender}
+                </p>
+                <p className="mt-1 text-sm text-slate-800">{message.text}</p>
+                <time className="mt-1 block text-[11px] text-slate-400">
+                  {new Date(message.createdAt).toLocaleString()}
+                </time>
+              </li>
+            ))}
           </ul>
         </div>
 
-        <ChatForm  />
+        <ChatForm />
       </div>
     </div>
   );

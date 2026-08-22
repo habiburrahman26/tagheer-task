@@ -7,7 +7,11 @@ import {
   type Conversation,
 } from '../login/actions';
 
-function AllUsers() {
+type AllUsersProps = {
+  onSelectConversation: (conversation: Conversation) => void;
+};
+
+function AllUsers({ onSelectConversation }: AllUsersProps) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -61,10 +65,14 @@ function AllUsers() {
           <li key={conversation._id}>
             <button
               type="button"
+              onClick={() => onSelectConversation(conversation)}
               className="flex w-full items-center gap-3 border-b border-slate-100 px-4 py-3 text-left transition hover:bg-[#f9e5df]/60"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#f9e5df] text-primary">
-                <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" />
+                {/* <ChatBubbleLeftRightIcon className="size-5" aria-hidden="true" /> */}
+                {conversation.type === 'group'
+                    ? conversation.name.charAt(0).toUpperCase()
+                    : conversation.participant.name.charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-slate-800">

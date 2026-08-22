@@ -6,9 +6,10 @@ import SearchUsers from '../components/search-user';
 import Welcome from '../components/welcome';
 import Header from '../components/header';
 import AllUsers from '../components/all-users';
+import type { Conversation } from '../login/actions';
 
 function Page() {
-  const [currentChat, setCurrentChat] = useState(null);
+  const [currentChat, setCurrentChat] = useState<Conversation | null>(null);
 
   return (
     <div className="container mx-auto">
@@ -17,15 +18,11 @@ function Page() {
         <div className="min-w-full bg-white border-x border-b border-gray-200 rounded lg:grid lg:grid-cols-3">
           <div className="bg-white border-r border-gray-200 lg:col-span-1">
             <SearchUsers />
-            <AllUsers/>
+            <AllUsers onSelectConversation={setCurrentChat} />
           </div>
 
           {currentChat ? (
-            <ChatRoom
-            // currentChat={currentChat}
-            // currentUser={currentUser}
-            // socket={socket}
-            />
+            <ChatRoom currentChat={currentChat} />
           ) : (
             <Welcome />
           )}
