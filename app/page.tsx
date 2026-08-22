@@ -5,9 +5,12 @@ import {
   ShieldCheckIcon,
   UsersIcon,
 } from '@heroicons/react/24/outline';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 
-export default function Home() {
+export default async function Home() {
+  const authToken = (await cookies()).get('authToken')?.value;
+
   return (
     <main className="landing-page min-h-screen overflow-hidden text-slate-900">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 sm:px-10 lg:px-16">
@@ -23,12 +26,12 @@ export default function Home() {
             <a href="#why-chat" className="hidden transition-colors hover:text-slate-950 sm:block">
               Why chat
             </a>
-            <Link
+           {!authToken && <Link
               href="/login"
               className="rounded-full border border-slate-300 bg-white/70 px-4 py-2 text-slate-900 transition hover:border-slate-900 hover:bg-white"
             >
               Sign in
-            </Link>
+            </Link>}
           </nav>
         </header>
 

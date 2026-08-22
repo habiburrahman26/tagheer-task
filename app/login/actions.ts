@@ -77,6 +77,12 @@ export async function login(
   redirect('/chat');
 }
 
+export async function logout(): Promise<never> {
+  const cookieStore = await cookies();
+  cookieStore.delete('authToken');
+  redirect('/');
+}
+
 
 export type ConversationParticipant = {
   _id: string;

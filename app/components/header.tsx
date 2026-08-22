@@ -3,6 +3,7 @@ import {
   ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { logout } from '../login/actions';
 
 export default function Header() {
   return (
@@ -30,18 +31,20 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-5">
-          <button
-            type="button"
-            aria-label="Log out"
-            title="Log out"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-primary/40 hover:bg-[#f9e5df] hover:text-[#c63d2c] focus:outline-none focus:ring-4 focus:ring-primary/10"
-          >
-            <ArrowLeftStartOnRectangleIcon
-              className="size-4 rotate-180"
-              aria-hidden="true"
-            />
-            <span className="hidden sm:inline">Log out</span>
-          </button>
+          <form action={logout}>
+            <button
+              type="submit"
+              aria-label="Log out"
+              title="Log out"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-primary/40 hover:bg-[#f9e5df] hover:text-[#c63d2c] focus:outline-none focus:ring-4 focus:ring-primary/10"
+            >
+              <ArrowLeftStartOnRectangleIcon
+                className="size-4 rotate-180"
+                aria-hidden="true"
+              />
+              <span className="hidden sm:inline">Log out</span>
+            </button>
+          </form>
         </div>
       </nav>
     </header>
