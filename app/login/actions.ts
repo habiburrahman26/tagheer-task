@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const LOGIN_URL = 'https://frontend-task-chatapp.onrender.com/api/auth/login';
+const BASE_URL = process.env.BASE_URL;
 
 export type LoginState = {
   error?: string;
@@ -46,7 +46,7 @@ export async function login(
   let data: { token?: string; error?: { message?: string } };
 
   try {
-    response = await fetch(LOGIN_URL, {
+    response = await fetch(`${BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone: phone.trim(), name: name.trim() }),
@@ -135,7 +135,7 @@ export async function getConversions(): Promise<Conversation[]> {
   }
 
   const response = await fetch(
-    'https://frontend-task-chatapp.onrender.com/api/conversations',
+    `${BASE_URL}/api/conversations`,
     {
       headers: {
         Accept: 'application/json',
@@ -162,7 +162,7 @@ export async function searchUsers(query: string): Promise<SearchUser[]> {
   }
 
   const response = await fetch(
-    `https://frontend-task-chatapp.onrender.com/api/users/search?q=${encodeURIComponent(query)}`,
+    `${BASE_URL}/api/users/search?q=${encodeURIComponent(query)}`,
     {
       headers: {
         Accept: 'application/json',
@@ -193,7 +193,7 @@ export async function createConversation(userId: string): Promise<Conversation> 
   }
 
   const response = await fetch(
-    'https://frontend-task-chatapp.onrender.com/api/conversations',
+    `${BASE_URL}/api/conversations`,
     {
       method: 'POST',
       headers: {
@@ -236,7 +236,7 @@ export async function getCurrentUser(): Promise<User> {
   }
 
   const response = await fetch(
-    'https://frontend-task-chatapp.onrender.com/api/auth/me',
+    `${BASE_URL}/api/auth/me`,
     {
       headers: {
         Accept: 'application/json',
@@ -275,7 +275,7 @@ export async function getMessages(
   }
 
   const response = await fetch(
-    `https://frontend-task-chatapp.onrender.com/api/conversations/${encodeURIComponent(conversationId)}/messages?${params.toString()}`,
+    `${BASE_URL}/api/conversations/${encodeURIComponent(conversationId)}/messages?${params.toString()}`,
     {
       headers: {
         Accept: 'application/json',
@@ -309,7 +309,7 @@ export async function sendMessage(
   }
 
   const response = await fetch(
-    'https://frontend-task-chatapp.onrender.com/api/messages',
+    `${BASE_URL}/api/messages`,
     {
       method: 'POST',
       headers: {
